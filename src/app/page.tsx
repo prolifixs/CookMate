@@ -1,5 +1,5 @@
 "use client"
-import { useState, useMemo, useRef, useEffect } from 'react'
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react'
 import Image from 'next/image';
 import { Button } from "./components/ui/button"
 import { Input } from "./components/ui/input"
@@ -27,6 +27,7 @@ DropdownMenuLabel,
 DropdownMenuSeparator,
 DropdownMenuTrigger,
 } from "./components/ui/dropdown-menu"
+import { throttle } from 'lodash';
 
 
 
@@ -78,129 +79,129 @@ const fixedWeekMeals = {
 };
 
 const recentCooks = [
-{
-  id: 1,
-  title: "Mac & Cheese",
-  description: "Quick and easy comfort food",
-  image: "/placeholder.svg?height=120&width=200"
-},
-{
-  id: 2,
-  title: "Turkey Stir Fry",
-  description: "Healthy and flavorful dinner",
-  image: "/placeholder.svg?height=120&width=200"
-},
-{
-  id: 3,
-  title: "Deli Meat / Sauerkraut",
-  description: "Simple sandwich combo",
-  image: "/placeholder.svg?height=120&width=200"
-},
-{
-  id: 4,
-  title: "Grilled Salmon",
-  description: "Omega-3 rich seafood dish",
-  image: "/placeholder.svg?height=120&width=200"
-},
-{
-  id: 5,
-  title: "Vegetable Curry",
-  description: "Spicy and aromatic veggie meal",
-  image: "/placeholder.svg?height=120&width=200"
-},
-{
-  id: 6,
-  title: "Chicken Parmesan",
-  description: "Italian-American classic",
-  image: "/placeholder.svg?height=120&width=200"
-},
-{
-  id: 7,
-  title: "Beef Tacos",
-  description: "Fun and customizable dinner",
-  image: "/placeholder.svg?height=120&width=200"
-},
-{
-  id: 8,
-  title: "Mushroom Risotto",
-  description: "Creamy Italian rice dish",
-  image: "/placeholder.svg?height=120&width=200"
-},
-{
-  id: 9,
-  title: "Sushi Rolls",
-  description: "Homemade Japanese favorite",
-  image: "/placeholder.svg?height=120&width=200"
-},
-{
-  id: 10,
-  title: "BBQ Ribs",
-  description: "Tender and saucy meat dish",
-  image: "/placeholder.svg?height=120&width=200"
-}
+  {
+    id: 1,
+    title: "Mac & Cheese",
+    description: "Quick and easy comfort food",
+    image: "/path/to/mac-and-cheese-image.jpg"
+  },
+  {
+    id: 2,
+    title: "Turkey Stir Fry",
+    description: "Healthy and flavorful dinner",
+    image: "/placeholder.svg?height=120&width=200"
+  },
+  {
+    id: 3,
+    title: "Deli Meat / Sauerkraut",
+    description: "Simple sandwich combo",
+    image: "/placeholder.svg?height=120&width=200"
+  },
+  {
+    id: 4,
+    title: "Grilled Salmon",
+    description: "Omega-3 rich seafood dish",
+    image: "/placeholder.svg?height=120&width=200"
+  },
+  {
+    id: 5,
+    title: "Vegetable Curry",
+    description: "Spicy and aromatic veggie meal",
+    image: "/placeholder.svg?height=120&width=200"
+  },
+  {
+    id: 6,
+    title: "Chicken Parmesan",
+    description: "Italian-American classic",
+    image: "/placeholder.svg?height=120&width=200"
+  },
+  {
+    id: 7,
+    title: "Beef Tacos",
+    description: "Fun and customizable dinner",
+    image: "/placeholder.svg?height=120&width=200"
+  },
+  {
+    id: 8,
+    title: "Mushroom Risotto",
+    description: "Creamy Italian rice dish",
+    image: "/placeholder.svg?height=120&width=200"
+  },
+  {
+    id: 9,
+    title: "Sushi Rolls",
+    description: "Homemade Japanese favorite",
+    image: "/placeholder.svg?height=120&width=200"
+  },
+  {
+    id: 10,
+    title: "BBQ Ribs",
+    description: "Tender and saucy meat dish",
+    image: "/placeholder.svg?height=120&width=200"
+  }
 ]
 
 const recommendations = [
-{
-  id: 1,
-  title: "Quinoa Buddha Bowl",
-  description: "Nutrient-packed vegetarian delight",
-  image: "/placeholder.svg?height=120&width=200"
-},
-{
-  id: 2,
-  title: "Lemon Garlic Shrimp",
-  description: "Zesty seafood in minutes",
-  image: "/placeholder.svg?height=120&width=200"
-},
-{
-  id: 3,
-  title: "Spinach and Feta Stuffed Chicken",
-  description: "Elegant yet easy dinner option",
-  image: "/placeholder.svg?height=120&width=200"
-},
-{
-  id: 4,
-  title: "Vegan Lentil Shepherd's Pie",
-  description: "Hearty plant-based comfort food",
-  image: "/placeholder.svg?height=120&width=200"
-},
-{
-  id: 5,
-  title: "Teriyaki Glazed Salmon",
-  description: "Sweet and savory Asian-inspired dish",
-  image: "/placeholder.svg?height=120&width=200"
-},
-{
-  id: 6,
-  title: "Mediterranean Chickpea Salad",
-  description: "Refreshing and protein-rich lunch",
-  image: "/placeholder.svg?height=120&width=200"
-},
-{
-  id: 7,
-  title: "Butternut Squash Soup",
-  description: "Creamy autumn favorite",
-  image: "/placeholder.svg?height=120&width=200"
-},
-{
-  id: 8,
-  title: "Beef and Broccoli Stir-Fry",
-  description: "Quick and satisfying weeknight meal",
-  image: "/placeholder.svg?height=120&width=200"
-},
-{
-  id: 9,
-  title: "Caprese Stuffed Portobello Mushrooms",
-  description: "Low-carb Italian-inspired appetizer",
-  image: "/placeholder.svg?height=120&width=200"
-},
-{
-  id: 10,
-  title: "Honey Mustard Glazed Pork Chops",
-  description: "Tangy and sweet main course",
-  image: "/placeholder.svg?height=120&width=200"
-}
+  {
+    id: 1,
+    title: "Mac & Cheese",
+    description: "Quick and easy comfort food",
+    image: "/path/to/mac-and-cheese-image.jpg"
+  },
+  {
+    id: 2,
+    title: "Turkey Stir Fry",
+    description: "Healthy and flavorful dinner",
+    image: "/placeholder.svg?height=120&width=200"
+  },
+  {
+    id: 3,
+    title: "Deli Meat / Sauerkraut",
+    description: "Simple sandwich combo",
+    image: "/placeholder.svg?height=120&width=200"
+  },
+  {
+    id: 4,
+    title: "Grilled Salmon",
+    description: "Omega-3 rich seafood dish",
+    image: "/placeholder.svg?height=120&width=200"
+  },
+  {
+    id: 5,
+    title: "Vegetable Curry",
+    description: "Spicy and aromatic veggie meal",
+    image: "/placeholder.svg?height=120&width=200"
+  },
+  {
+    id: 6,
+    title: "Chicken Parmesan",
+    description: "Italian-American classic",
+    image: "/placeholder.svg?height=120&width=200"
+  },
+  {
+    id: 7,
+    title: "Beef Tacos",
+    description: "Fun and customizable dinner",
+    image: "/placeholder.svg?height=120&width=200"
+  },
+  {
+    id: 8,
+    title: "Mushroom Risotto",
+    description: "Creamy Italian rice dish",
+    image: "/placeholder.svg?height=120&width=200"
+  },
+  {
+    id: 9,
+    title: "Sushi Rolls",
+    description: "Homemade Japanese favorite",
+    image: "/placeholder.svg?height=120&width=200"
+  },
+  {
+    id: 10,
+    title: "BBQ Ribs",
+    description: "Tender and saucy meat dish",
+    image: "/placeholder.svg?height=120&width=200"
+  }
 ]
 
 export default function Home() {
@@ -271,14 +272,17 @@ export default function Home() {
     return 'unknown'
   }
   
-  const handleScroll = (direction: 'left' | 'right', scrollContainerRef: React.RefObject<HTMLDivElement>, setScrollPosition: React.Dispatch<React.SetStateAction<number>>) => {
-    const container = scrollContainerRef.current
-    if (container) {
-      const scrollAmount = direction === 'left' ? -210 : 210 // Adjusted for smaller card width
-      container.scrollBy({ left: scrollAmount, behavior: 'smooth' })
-      setScrollPosition(container.scrollLeft + scrollAmount)
-    }
-  }
+  const handleScroll = useCallback(
+    throttle((direction: 'left' | 'right', scrollContainerRef: React.RefObject<HTMLDivElement>, setScrollPosition: React.Dispatch<React.SetStateAction<number>>) => {
+      const container = scrollContainerRef.current
+      if (container) {
+        const scrollAmount = direction === 'left' ? -304 : 304 // 300px card width + 4px gap
+        container.scrollBy({ left: scrollAmount, behavior: 'smooth' })
+        setScrollPosition(prev => Math.max(0, prev + scrollAmount))
+      }
+    }, 200),
+    []
+  )
   type WeekMeals = {
     [key in typeof daysOfWeek[number]]: { id: number; name: string; color: string; }[];
   };
@@ -392,46 +396,54 @@ export default function Home() {
             <div className="flex-1 max-w-[660px] mr-4"> {/* Update 2 */}
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-2xl font-bold">Recent Cooks</h2>
-                <Button variant="link">View All</Button>
+                <Button variant="link" className="text-sm">View All</Button>
               </div>
               <div className="relative">
-              <Button 
+                <Button 
                   variant="outline" 
-                  size="sm" // Change "icon" to "sm"
-                  className="absolute left-0 top-1/2 -translate-y-1/2 z-10"
+                  size="sm"
+                  className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full"
                   onClick={() => handleScroll('left', recentCooksScrollContainerRef, setRecentCooksScrollPosition)}
                 >
                   <ChevronLeft className="h-4 w-4" />
-              </Button>
+                </Button>
                 <div 
                   ref={recentCooksScrollContainerRef}
-                  className="flex overflow-x-auto space-x-4 scrollbar-hide"
-                  style={{ scrollSnapType: 'x mandatory' }}
+                  className="flex overflow-x-auto space-x-4 scrollbar-hide pb-4"
+                  style={{ 
+                    scrollSnapType: 'x mandatory',
+                    scrollBehavior: 'smooth',
+                    WebkitOverflowScrolling: 'touch'
+                  }}
                 >
                   {recentCooks.map((cook) => (
-                    <Card key={cook.id} className="flex-shrink-0 w-[200px]" style={{ scrollSnapAlign: 'start' }}>
-                    <CardContent className="p-0 relative">
-                      <Image
-                        src={cook.image}
-                        alt={cook.title}
-                        width={200}
-                        height={120}
-                        className="object-cover"
-                      />
-                      <div className="absolute top-2 left-2 bg-white rounded-full p-1">
-                        <Star className="h-3 w-3" />
-                      </div>
-                      {/* ... rest of the card content ... */}
-                    </CardContent>
+                    <Card key={cook.id} className="flex-shrink-0 w-[300px] h-[200px] relative overflow-hidden">
+                      <CardContent className="p-0">
+                        <Image
+                          src={cook.image}
+                          alt={cook.title}
+                          layout="fill"
+                          objectFit="cover"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                        <div className="absolute top-4 left-4">
+                          <Button variant="ghost" size="sm" className="rounded-full bg-white/80 p-1">
+                            <Star className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        <div className="absolute bottom-4 left-4 right-4 text-white">
+                          <h3 className="text-lg font-semibold mb-1">{cook.title}</h3>
+                          <p className="text-sm">{cook.description}</p>
+                        </div>
+                      </CardContent>
                     </Card>
                   ))}
                 </div>
                 <Button 
                   variant="outline" 
-                  size="sm" 
-                  className="absolute right-0 top-1/2 -translate-y-1/2 z-10"
+                  size="sm"
+                  className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full"
                   onClick={() => handleScroll('right', recentCooksScrollContainerRef, setRecentCooksScrollPosition)}
-                  disabled={recentCooksScrollPosition >= (recentCooks.length - 3) * 210}
                 >
                   <ChevronRight className="h-4 w-4" />
                 </Button>
@@ -464,47 +476,50 @@ export default function Home() {
           <div className="w-full max-w-[660px] mb-8">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-2xl font-bold">Recommendations</h2>
-              <Button variant="link">View All</Button>
+              <Button variant="link" className="text-sm">View All</Button>
             </div>
             <div className="relative">
               <Button 
                 variant="outline" 
-                size="sm" 
-                className="absolute left-0 top-1/2 -translate-y-1/2 z-10"
+                size="sm"
+                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full"
                 onClick={() => handleScroll('left', recommendationsScrollContainerRef, setRecommendationsScrollPosition)}
-                disabled={recommendationsScrollPosition <= 0}
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
               <div 
                 ref={recommendationsScrollContainerRef}
-                className="flex overflow-x-auto space-x-4 scrollbar-hide"
+                className="flex overflow-x-auto space-x-4 scrollbar-hide pb-4"
                 style={{ scrollSnapType: 'x mandatory' }}
               >
                 {recommendations.map((recommendation) => (
-                  <Card key={recommendation.id} className="flex-shrink-0 w-[200px]" style={{ scrollSnapAlign: 'start' }}>
-                  <CardContent className="p-0 relative">
+                  <Card key={recommendation.id} className="flex-shrink-0 w-[300px] h-[200px] relative overflow-hidden">
+                    <CardContent className="p-0">
                       <Image
                         src={recommendation.image}
                         alt={recommendation.title}
-                        width={200}
-                        height={120}
-                        className="object-cover"
+                        layout="fill"
+                        objectFit="cover"
                       />
-                      <div className="absolute top-2 left-2 bg-white rounded-full p-1">
-                        <Star className="h-3 w-3" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                      <div className="absolute top-4 left-4">
+                        <Button variant="ghost" size="sm" className="rounded-full bg-white/80 p-1">
+                          <Star className="h-4 w-4" />
+                        </Button>
                       </div>
-                    {/* ... rest of the card content ...*/}
-                  </CardContent>
+                      <div className="absolute bottom-4 left-4 right-4 text-white">
+                        <h3 className="text-lg font-semibold mb-1">{recommendation.title}</h3>
+                        <p className="text-sm">{recommendation.description}</p>
+                      </div>
+                    </CardContent>
                   </Card>
                 ))}
               </div>
               <Button 
                 variant="outline" 
-                size="sm" 
-                className="absolute right-0 top-1/2 -translate-y-1/2 z-10"
+                size="sm"
+                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full"
                 onClick={() => handleScroll('right', recommendationsScrollContainerRef, setRecommendationsScrollPosition)}
-                disabled={recommendationsScrollPosition >= (recommendations.length - 3) * 210}
               >
                 <ChevronRight className="h-4 w-4" />
               </Button>
@@ -544,3 +559,11 @@ export default function Home() {
     </div>
   )
   }
+
+
+
+
+
+
+
+
